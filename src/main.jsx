@@ -16,7 +16,8 @@ const EXAMPLE_RELATIONS = {
   5: { 4: "same" },
   6: { 4: "opposite" },
 };
-const MUSIC_EMBED = "https://www.youtube-nocookie.com/embed/_4IRMYuE1hI";
+const MUSIC_EMBED =
+  "https://www.youtube.com/embed/_4IRMYuE1hI?controls=1&rel=0&modestbranding=1&playsinline=1";
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 const directionValue = (direction) => (direction === "D" ? 1 : -1);
