@@ -30,7 +30,7 @@ button {
 
 .app-shell {
   min-height: 100vh;
-  padding: 20px;
+  padding: 74px 20px 20px;
   background:
     linear-gradient(90deg, rgba(15, 14, 13, 0.48), rgba(15, 14, 13, 0.2) 45%, rgba(15, 14, 13, 0.58)),
     linear-gradient(180deg, rgba(15, 14, 13, 0.14), rgba(15, 14, 13, 0.72)),
@@ -50,9 +50,10 @@ button {
 .control-band,
 .relations-section,
 .result-band {
-  background: rgba(249, 247, 240, 0.98);
-  border: 1px solid rgba(24, 24, 24, 0.16);
+  background: rgba(249, 247, 240, 0.78);
+  border: 1px solid rgba(255, 250, 240, 0.24);
   box-shadow: 0 18px 55px rgba(0, 0, 0, 0.22);
+  backdrop-filter: blur(8px);
 }
 
 .topbar {
@@ -115,12 +116,12 @@ h3 {
   right: clamp(18px, 8vw, 145px);
   bottom: clamp(76px, 15vh, 132px);
   z-index: 20;
-  padding: 10px;
-  border: 1px solid rgba(255, 250, 240, 0.25);
+  padding: 12px;
+  border: 1px solid rgba(255, 250, 240, 0.32);
   border-radius: 8px;
-  background: rgba(22, 20, 18, 0.72);
+  background: rgba(22, 20, 18, 0.48);
   box-shadow: 0 18px 45px rgba(0, 0, 0, 0.42);
-  backdrop-filter: blur(5px);
+  backdrop-filter: blur(8px);
 }
 
 .primary-button,
@@ -150,11 +151,40 @@ h3 {
 }
 
 .topbar .primary-button {
-  min-height: 52px;
-  padding: 0 22px;
+  min-height: 58px;
+  padding: 0 28px;
   border: 2px solid rgba(255, 250, 240, 0.7);
   box-shadow: 0 0 0 5px rgba(167, 51, 40, 0.18);
-  font-size: 1.04rem;
+  font-size: 1.08rem;
+}
+
+.music-player {
+  position: fixed;
+  top: 14px;
+  right: 16px;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: min(520px, calc(100vw - 32px));
+  padding: 9px 10px 9px 12px;
+  border: 1px solid rgba(255, 250, 240, 0.25);
+  border-radius: 8px;
+  color: #fffaf0;
+  background: rgba(18, 17, 16, 0.58);
+  box-shadow: 0 14px 38px rgba(0, 0, 0, 0.36);
+  backdrop-filter: blur(8px);
+}
+
+.music-player span {
+  font-size: 0.82rem;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.music-player audio {
+  width: min(360px, 48vw);
+  height: 32px;
 }
 
 .ghost-button {
@@ -234,9 +264,10 @@ h3 {
 
 .relation-card {
   padding: 16px;
-  border: 1px solid rgba(30, 28, 24, 0.13);
+  border: 1px solid rgba(255, 250, 240, 0.24);
   border-radius: 8px;
-  background: #fffdf8;
+  background: rgba(255, 253, 248, 0.72);
+  backdrop-filter: blur(6px);
 }
 
 .relation-card-top {
@@ -378,9 +409,10 @@ h3 {
 
 .state-card {
   padding: 14px;
-  border: 1px solid rgba(23, 23, 23, 0.12);
+  border: 1px solid rgba(255, 250, 240, 0.22);
   border-radius: 8px;
-  background: #fffdf8;
+  background: rgba(255, 253, 248, 0.74);
+  backdrop-filter: blur(6px);
 }
 
 .state-title {
@@ -417,7 +449,7 @@ h3 {
 
 @media (max-width: 760px) {
   .app-shell {
-    padding: 12px;
+    padding: 78px 12px 12px;
   }
 
   .topbar,
@@ -447,6 +479,15 @@ h3 {
     background: transparent;
     box-shadow: none;
     backdrop-filter: none;
+  }
+
+  .music-player {
+    left: 12px;
+    right: 12px;
+  }
+
+  .music-player audio {
+    width: 100%;
   }
 
   .primary-button,
