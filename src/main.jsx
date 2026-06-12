@@ -22,6 +22,14 @@ const TRACKS = [
   { title: "Gothic - New Camp", src: gothicTrack },
   { title: "Beethoven V", src: beethovenTrack },
 ];
+const PIN_COUNT_OPTIONS = Array.from(
+  { length: MAX_PINS - MIN_PINS + 1 },
+  (_, index) => MIN_PINS + index,
+);
+const POSITION_OPTIONS = Array.from(
+  { length: MAX_POSITION - MIN_POSITION + 1 },
+  (_, index) => MIN_POSITION + index,
+);
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 const directionValue = (direction) => (direction === "D" ? 1 : -1);
@@ -202,10 +210,43 @@ const Icon = ({ children }) => (
   </span>
 );
 
-function RelationButton({ active, children, onClick }) {
+function NumberChoice({ className, label, value, min, max, options, onChange }) {
   return (
-    <button className={active ? "relation-button active" : "relation-button"} type="button" onClick={onClick}>
-      {children}
+    <label className={className}>
+      <span>{label}</span>
+      <div className="number-choice">
+        <input
+          type="number"
+          min={min}
+          max={max}
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+        />
+        <select
+          aria-label={`${label} - wybierz z listy`}
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+        >
+          {options.map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </select>
+      </div>
+    </label>
+  );
+}
+
+function RelationButton({ active, relation, children, onClick }) {
+  return (
+    <button
+      aria-pressed={active}
+      className={active ? `relation-button ${relation} active` : `relation-button ${relation}`}
+      type="button"
+      onClick={onClick}
+    >
+      <span>{children}</span>
     </button>
   );
 }
@@ -332,29 +373,28 @@ function App() {
         </header>
 
         <section className="control-band" aria-label="Pozycje zapadek">
-          <label className="field">
-            <span>Liczba zapadek</span>
-            <input
-              type="number"
-              min={MIN_PINS}
-              max={MAX_PINS}
-              value={pinCount}
-              onChange={(event) => resizePuzzle(event.target.value)}
-            />
-          </label>
+          <NumberChoice
+            className="field"
+            label="Liczba zapadek"
+            value={pinCount}
+            min={MIN_PINS}
+            max={MAX_PINS}
+            options={PIN_COUNT_OPTIONS}
+            onChange={resizePuzzle}
+          />
 
           <div className="positions" aria-label="Oczka zapadek">
             {Array.from({ length: pinCount }, (_, index) => (
-              <label className="tile-input" key={index}>
-                <span>Zapadka {index + 1}</span>
-                <input
-                  type="number"
-                  min={MIN_POSITION}
-                  max={MAX_POSITION}
-                  value={normalizedPositions[index]}
-                  onChange={(event) => updatePosition(index, event.target.value)}
-                />
-              </label>
+              <NumberChoice
+                className="tile-input"
+                key={index}
+                label={`Zapadka ${index + 1}`}
+                value={normalizedPositions[index]}
+                min={MIN_POSITION}
+                max={MAX_POSITION}
+                options={POSITION_OPTIONS}
+                onChange={(value) => updatePosition(index, value)}
+              />
             ))}
           </div>
         </section>
@@ -384,18 +424,24 @@ function App() {
                       <h3>Zapadka {sourcePin}</h3>
                       <p>{isFree ? "rusza tylko siebie" : relationSummary(sourcePin, relations)}</p>
                     </div>
-                    <button className={isFree ? "free-button active" : "free-button"} type="button" onClick={() => clearRelations(sourcePin)}>
+                    <button
+                      aria-pressed={isFree}
+                      className={isFree ? "free-button active" : "free-button"}
+                      type="button"
+                      onClick={() => clearRelations(sourcePin)}
+                    >
                       Niezależna
                     </button>
                   </div>
 
-                  <div className="relation-row">
+                  <div className="relation-row same-direction">
                     <span>Ten sam kierunek</span>
                     <div className="relation-buttons">
                       {targets.map((targetPin) => (
                         <RelationButton
                           key={`${sourcePin}-same-${targetPin}`}
                           active={getRelation(relations, sourcePin, targetPin) === "same"}
+                          relation="same"
                           onClick={() => setRelation(sourcePin, targetPin, "same")}
                         >
                           {targetPin}
@@ -404,13 +450,14 @@ function App() {
                     </div>
                   </div>
 
-                  <div className="relation-row">
+                  <div className="relation-row opposite-direction">
                     <span>Przeciwny kierunek</span>
                     <div className="relation-buttons">
                       {targets.map((targetPin) => (
                         <RelationButton
                           key={`${sourcePin}-opposite-${targetPin}`}
                           active={getRelation(relations, sourcePin, targetPin) === "opposite"}
+                          relation="opposite"
                           onClick={() => setRelation(sourcePin, targetPin, "opposite")}
                         >
                           {targetPin}

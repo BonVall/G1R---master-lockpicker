@@ -249,33 +249,54 @@ audio:focus-visible {
 
 .music-player {
   position: fixed;
-  top: clamp(8px, 1vh, 12px);
-  right: clamp(12px, 1vw, 18px);
+  top: 12px;
+  right: 14px;
   z-index: 7;
   display: flex;
   align-items: center;
-  gap: 8px;
-  width: min(360px, 24vw);
-  min-width: 300px;
-  padding: 6px 8px;
-  border: 1px solid rgba(194, 185, 162, 0.32);
+  gap: 7px;
+  width: clamp(342px, 18.3vw, 382px);
+  min-width: 342px;
+  height: 44px;
+  padding: 6px 8px 6px 10px;
+  border: 1px solid rgba(194, 185, 162, 0.42);
   border-radius: 7px;
   color: #f1e8d1;
-  background: rgba(7, 7, 7, 0.58);
-  box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.8);
+  background:
+    linear-gradient(180deg, rgba(15, 15, 14, 0.98), rgba(2, 2, 2, 0.98));
+  box-shadow:
+    inset 0 0 12px rgba(0, 0, 0, 0.9),
+    0 0 0 3px rgba(0, 0, 0, 0.38),
+    0 4px 16px rgba(0, 0, 0, 0.56);
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.music-player::before {
+  content: "";
+  position: absolute;
+  inset: -9px;
+  z-index: -1;
+  background: rgba(3, 3, 3, 0.98);
 }
 
 .music-player select {
-  max-width: 108px;
+  flex: 0 0 132px;
+  max-width: none;
+  min-width: 0;
+  height: 28px;
   border: 0;
   color: #f1e8d1;
   background: transparent;
-  font-size: 0.78rem;
+  font-size: 0.72rem;
   font-weight: 700;
+  text-overflow: ellipsis;
 }
 
 .music-player audio {
-  width: 100%;
+  flex: 1 1 auto;
+  width: auto;
+  min-width: 0;
   height: 28px;
 }
 
@@ -298,14 +319,14 @@ audio:focus-visible {
   text-shadow: 0 2px 2px #000;
 }
 
-.field input,
-.tile-input input {
+.number-choice {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 34px;
   width: 100%;
   min-height: 42px;
-  padding: 0 10px;
   border: 2px solid rgba(144, 141, 119, 0.84);
   border-radius: 2px;
-  color: #e2d5b7;
   background:
     radial-gradient(circle at center, rgba(89, 77, 49, 0.24), transparent 58%),
     rgba(5, 5, 5, 0.76);
@@ -313,19 +334,59 @@ audio:focus-visible {
     inset 0 0 14px rgba(0, 0, 0, 0.86),
     0 0 0 1px rgba(0, 0, 0, 0.75),
     0 2px 0 rgba(220, 207, 170, 0.12);
-  font-size: 1.12rem;
-  font-weight: 700;
-  text-align: center;
+  overflow: hidden;
   transition:
     border-color 120ms ease,
     box-shadow 120ms ease,
-    background 120ms ease;
+    background 120ms ease,
+    transform 120ms ease;
 }
 
-.field input:hover,
-.tile-input input:hover,
-.field input:focus,
-.tile-input input:focus {
+.number-choice::after {
+  content: "▾";
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  color: #d9cda9;
+  font-size: 0.8rem;
+  line-height: 1;
+  pointer-events: none;
+  transform: translateY(-50%);
+  text-shadow: 0 2px 2px #000;
+}
+
+.number-choice input,
+.number-choice select {
+  width: 100%;
+  min-width: 0;
+  min-height: 38px;
+  border: 0;
+  color: #e2d5b7;
+  background: transparent;
+  font-size: 1.12rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.number-choice input {
+  padding: 0 6px 0 12px;
+}
+
+.number-choice select {
+  appearance: none;
+  padding: 0;
+  border-left: 1px solid rgba(162, 153, 122, 0.32);
+  color: transparent;
+  cursor: pointer;
+}
+
+.number-choice select option {
+  color: #1b160f;
+  background: #d9cfb5;
+}
+
+.number-choice:hover,
+.number-choice:focus-within {
   border-color: rgba(237, 221, 177, 0.96);
   background:
     radial-gradient(circle at center, rgba(128, 96, 45, 0.32), transparent 62%),
@@ -333,6 +394,7 @@ audio:focus-visible {
   box-shadow:
     inset 0 0 18px rgba(0, 0, 0, 0.82),
     0 0 14px rgba(213, 184, 105, 0.25);
+  transform: translateY(-1px);
 }
 
 .positions {
@@ -462,6 +524,9 @@ audio:focus-visible {
 }
 
 .relation-button {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   min-height: 28px;
   border: 2px solid rgba(132, 130, 110, 0.78);
   border-radius: 2px;
@@ -474,9 +539,61 @@ audio:focus-visible {
     0 1px 0 rgba(224, 211, 171, 0.12);
   font-size: 0.9rem;
   font-weight: 700;
+  transition:
+    transform 120ms ease,
+    filter 120ms ease,
+    border-color 120ms ease,
+    box-shadow 120ms ease;
 }
 
-.relation-row:first-of-type .relation-button.active {
+.relation-button::before,
+.relation-button::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+}
+
+.relation-button::before {
+  inset: 0;
+  z-index: -1;
+  opacity: 0;
+  transform: scaleX(0.18);
+  transform-origin: center;
+  transition:
+    opacity 140ms ease,
+    transform 180ms ease;
+}
+
+.relation-button::after {
+  inset: 3px;
+  border: 1px solid rgba(242, 225, 174, 0.3);
+  opacity: 0;
+  transition: opacity 140ms ease;
+}
+
+.relation-button span {
+  position: relative;
+  z-index: 1;
+}
+
+.relation-button:hover {
+  transform: translateY(-1px) scale(1.05);
+  box-shadow:
+    inset 0 0 9px rgba(0, 0, 0, 0.82),
+    0 0 10px rgba(219, 190, 111, 0.24);
+}
+
+.relation-button.active::before {
+  opacity: 1;
+  transform: scaleX(1);
+  animation: lockPulse 1300ms ease-in-out infinite;
+}
+
+.relation-button.active::after {
+  opacity: 1;
+}
+
+.relation-button.same.active {
   color: #161610;
   border-color: #e0c986;
   background: linear-gradient(180deg, #e2d2a2, #8a7043);
@@ -485,13 +602,32 @@ audio:focus-visible {
     0 0 12px rgba(219, 190, 111, 0.36);
 }
 
-.relation-row:last-of-type .relation-button.active {
+.relation-button.same.active::before {
+  background: linear-gradient(180deg, rgba(239, 219, 157, 0.98), rgba(125, 94, 45, 0.98));
+}
+
+.relation-button.opposite.active {
   color: #f6ead0;
   border-color: #d58a70;
   background: linear-gradient(180deg, #b5362c, #5b0906);
   box-shadow:
     inset 0 0 10px rgba(0, 0, 0, 0.52),
     0 0 12px rgba(201, 43, 31, 0.42);
+}
+
+.relation-button.opposite.active::before {
+  background: linear-gradient(180deg, rgba(178, 43, 33, 0.98), rgba(76, 5, 4, 0.98));
+}
+
+@keyframes lockPulse {
+  0%,
+  100% {
+    filter: brightness(1);
+  }
+
+  50% {
+    filter: brightness(1.24);
+  }
 }
 
 .result-band {
