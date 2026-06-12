@@ -302,7 +302,7 @@ function App() {
         <header className="topbar">
           <div>
             <p className="eyebrow">Solver zamka G1</p>
-            <h1>G1 Master Lockpicker</h1>
+            <h1>G1 Remake - Otwieracz Skrzynek Bożych</h1>
             <p className="hero-note">
               Wpisz oczka zapadek. Zależności ustawiasz kliknięciem: ten sam kierunek albo przeciwny.
               Każdy ruch przesuwa zapadkę dokładnie o jedno oczko, a celem jest komplet na 4.

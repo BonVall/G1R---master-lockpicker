@@ -1,4 +1,4 @@
-# G1 Master Lockpicker
+# G1 Remake - Otwieracz Skrzynek Bożych
 
 Klientowa aplikacja React/Vite do rozwiązywania zamka G1 z 3-7 zapadkami.
 
