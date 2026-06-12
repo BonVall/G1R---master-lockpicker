@@ -9,6 +9,16 @@ npm install
 npm run dev
 ```
 
+## Publikacja na GitHub Pages
+
+Projekt ma gotowy workflow `.github/workflows/deploy.yml`. Po wypchnięciu zmian na branch `main` GitHub Actions zbuduje aplikację i opublikuje ją w GitHub Pages.
+
+W repozytorium na GitHub ustaw:
+
+1. `Settings` -> `Pages`.
+2. `Build and deployment` -> `Source`: `GitHub Actions`.
+3. Wypchnij zmiany na `main`.
+
 ## Funkcje
 
 - wybór liczby płytek od 3 do 7,
