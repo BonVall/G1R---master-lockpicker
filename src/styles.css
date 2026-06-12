@@ -43,10 +43,10 @@ button {
 .workspace {
   position: relative;
   z-index: 2;
-  width: min(60.5vw, 1190px);
-  min-width: 940px;
-  min-height: clamp(760px, 90vh, 1018px);
-  margin-left: clamp(356px, 20.6vw, 424px);
+  width: min(76.2vw, 1276px);
+  min-width: 1040px;
+  min-height: clamp(820px, 92.6vh, 1038px);
+  margin-left: clamp(330px, 16.4vw, 422px);
   color: #d8cdb0;
   background:
     radial-gradient(circle at 50% 20%, rgba(84, 78, 61, 0.22), transparent 42%),
@@ -100,7 +100,7 @@ button {
 
 .topbar {
   min-height: 246px;
-  padding: 46px 88px 0 88px;
+  padding: 46px 88px 0 92px;
 }
 
 .eyebrow {
@@ -121,7 +121,7 @@ h3 {
 }
 
 h1 {
-  max-width: 820px;
+  max-width: 900px;
   color: #d6ccb4;
   font-size: clamp(3.15rem, 3.35vw, 4.45rem);
   font-weight: 700;
@@ -165,8 +165,8 @@ h3 {
 
 .topbar .actions {
   position: fixed;
-  right: clamp(70px, 5.5vw, 104px);
-  bottom: clamp(112px, 12vh, 138px);
+  right: clamp(80px, 4.1vw, 92px);
+  bottom: clamp(118px, 12.4vh, 148px);
   z-index: 6;
   padding: 0;
 }
@@ -215,8 +215,8 @@ h3 {
 }
 
 .primary-button {
-  min-width: clamp(210px, 12vw, 252px);
-  min-height: clamp(66px, 8vh, 82px);
+  min-width: clamp(244px, 13.8vw, 292px);
+  min-height: clamp(76px, 8.8vh, 92px);
   border: 6px solid rgba(145, 142, 126, 0.82);
   border-radius: 2px;
   background:
@@ -249,15 +249,15 @@ audio:focus-visible {
 
 .music-player {
   position: fixed;
-  top: 12px;
-  right: 14px;
+  top: 10px;
+  right: 10px;
   z-index: 7;
   display: flex;
   align-items: center;
   gap: 7px;
-  width: clamp(342px, 18.3vw, 382px);
-  min-width: 342px;
-  height: 44px;
+  width: clamp(382px, 19.6vw, 420px);
+  min-width: 382px;
+  height: 46px;
   padding: 6px 8px 6px 10px;
   border: 1px solid rgba(194, 185, 162, 0.42);
   border-radius: 7px;
@@ -303,8 +303,8 @@ audio:focus-visible {
 .control-band {
   display: grid;
   grid-template-columns: 145px 1fr;
-  gap: 30px;
-  padding: 0 74px 26px;
+  gap: 34px;
+  padding: 0 86px 26px;
   border-top: 2px solid rgba(201, 194, 169, 0.34);
   border-bottom: 2px solid rgba(201, 194, 169, 0.34);
   background: rgba(0, 0, 0, 0.18);
@@ -410,7 +410,7 @@ audio:focus-visible {
 }
 
 .relations-section {
-  padding: 18px 74px 0;
+  padding: 18px 86px 0;
 }
 
 .section-heading {
@@ -433,7 +433,7 @@ audio:focus-visible {
 .relation-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 13px 18px;
+  gap: 13px 20px;
 }
 
 .relation-card {
@@ -637,7 +637,7 @@ audio:focus-visible {
   gap: 18px;
   min-height: 120px;
   margin-top: 18px;
-  padding: 20px 74px 42px;
+  padding: 20px 86px 42px;
   border-top: 2px solid rgba(201, 194, 169, 0.34);
   background: rgba(0, 0, 0, 0.2);
   opacity: 1;
@@ -650,7 +650,7 @@ audio:focus-visible {
 
 .result-heading .ghost-button {
   position: absolute;
-  right: 74px;
+  right: 86px;
   top: 28px;
   min-width: 116px;
   min-height: 36px;
