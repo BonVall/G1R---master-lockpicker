@@ -290,7 +290,6 @@ function App() {
 
   return (
     <main className="app-shell">
-      <div className="finger-pointer" aria-hidden="true" />
       <aside className="music-player" aria-label="Odtwarzacz muzyki">
         <span>Soundtrack</span>
         <iframe
