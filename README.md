@@ -23,6 +23,7 @@ W repozytorium na GitHub ustaw:
 
 - wybór liczby zapadek od 3 do 7,
 - edycja oczka każdej zapadki w zakresie `1..7`,
+- ruch poza zakres `1..7` jest niedozwolony; oczka nie zawijają się cyklicznie,
 - cel: wszystkie zapadki na oczku `4`,
 - klikalne zależności `ten sam kierunek` i `przeciwny kierunek`,
 - ruch każdej zapadki zawsze o dokładnie jedno oczko,

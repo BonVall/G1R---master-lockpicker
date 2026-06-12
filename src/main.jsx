@@ -47,9 +47,6 @@ const normalizeState = (state, size) =>
     .slice(0, size)
     .map((value) => clamp(Number(value) || TARGET_POSITION, MIN_POSITION, MAX_POSITION));
 
-const wrapPosition = (value) =>
-  ((value - MIN_POSITION) % MAX_POSITION + MAX_POSITION) % MAX_POSITION + MIN_POSITION;
-
 const isSolved = (state) => state.every((value) => value === TARGET_POSITION);
 
 function makeEmptyRelations(size) {
@@ -100,7 +97,12 @@ function applyMove(state, relations, move) {
     deltas[effect.pin - 1] += directionValue(effect.direction);
   });
 
-  return state.map((value, index) => wrapPosition(value + deltas[index]));
+  const nextState = state.map((value, index) => value + deltas[index]);
+  const isLegalMove = nextState.every(
+    (value) => value >= MIN_POSITION && value <= MAX_POSITION,
+  );
+
+  return isLegalMove ? nextState : null;
 }
 
 function solveLock(startState, relations, size) {
@@ -125,6 +127,11 @@ function solveLock(startState, relations, size) {
       for (const direction of ["A", "D"]) {
         const move = { pin, direction };
         const nextState = applyMove(current.state, relations, move);
+
+        if (!nextState) {
+          continue;
+        }
+
         const key = stateKey(nextState);
 
         if (visited.has(key)) {
@@ -180,6 +187,7 @@ function formatExport(size, startState, relations, result) {
     "G1 Master Lockpicker",
     `Liczba zapadek: ${size}`,
     `Cel: kazda zapadka na oczku ${TARGET_POSITION}`,
+    `Zasada zakresu: ruch poza ${MIN_POSITION}-${MAX_POSITION} jest niedozwolony, bez zawijania`,
     `Pozycje startowe: ${startState.map((value, index) => `${index + 1}:${value}`).join(" ")}`,
     "",
     "Zaleznosci:",
@@ -361,7 +369,8 @@ function App() {
             <h1>G1 Remake - Otwieracz Skrzynek Bożych</h1>
             <p className="hero-note">
               Wpisz oczka zapadek. Zależności ustawiasz kliknięciem: ten sam kierunek albo przeciwny.
-              Każdy ruch przesuwa zapadkę dokładnie o jedno oczko, a celem jest komplet na 4.
+              Każdy ruch przesuwa zapadkę dokładnie o jedno oczko, bez zawijania poza 1-7.
+              Celem jest komplet na 4.
             </p>
           </div>
           <div className="actions">
