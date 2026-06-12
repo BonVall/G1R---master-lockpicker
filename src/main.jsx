@@ -1,6 +1,8 @@
 import React, { useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
 import "./styles.css";
+import gothicTrack from "./media/gothic-new-camp.mp4";
+import beethovenTrack from "./media/beethoven-5.mp4";
 
 const MIN_PINS = 3;
 const MAX_PINS = 7;
@@ -16,8 +18,10 @@ const EXAMPLE_RELATIONS = {
   5: { 4: "same" },
   6: { 4: "opposite" },
 };
-const MUSIC_EMBED =
-  "https://www.youtube.com/embed/_4IRMYuE1hI?controls=1&rel=0&modestbranding=1&playsinline=1";
+const TRACKS = [
+  { title: "Gothic - New Camp", src: gothicTrack },
+  { title: "Beethoven V", src: beethovenTrack },
+];
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 const directionValue = (direction) => (direction === "D" ? 1 : -1);
@@ -211,6 +215,7 @@ function App() {
   const [positions, setPositions] = useState(EXAMPLE_POSITIONS);
   const [relations, setRelations] = useState(() => resizeRelations(EXAMPLE_RELATIONS, 6));
   const [result, setResult] = useState(null);
+  const [trackIndex, setTrackIndex] = useState(0);
 
   const normalizedPositions = useMemo(
     () => normalizeState(positions, pinCount),
@@ -292,13 +297,20 @@ function App() {
   return (
     <main className="app-shell">
       <aside className="music-player" aria-label="Odtwarzacz muzyki">
-        <span>Soundtrack</span>
-        <iframe
-          title="Odtwarzacz muzyki"
-          src={MUSIC_EMBED}
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-          allowFullScreen
-        />
+        <select
+          aria-label="Wybierz utwór"
+          value={trackIndex}
+          onChange={(event) => setTrackIndex(Number(event.target.value))}
+        >
+          {TRACKS.map((track, index) => (
+            <option key={track.src} value={index}>
+              {track.title}
+            </option>
+          ))}
+        </select>
+        <audio controls src={TRACKS[trackIndex].src}>
+          Twoja przeglądarka nie obsługuje odtwarzacza audio.
+        </audio>
       </aside>
 
       <section className="workspace">
@@ -412,7 +424,7 @@ function App() {
           </div>
         </section>
 
-        <section className="result-band" aria-live="polite">
+        <section className={result ? "result-band result-visible" : "result-band"} aria-live="polite">
           <div className="result-heading">
             <div>
               <p className="eyebrow">Wynik</p>
