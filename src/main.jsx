@@ -2,38 +2,130 @@ import React, { useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
 import "./styles.css";
 
-const MIN_TILES = 3;
-const MAX_TILES = 7;
+const MIN_PINS = 3;
+const MAX_PINS = 7;
 const MIN_POSITION = 1;
 const MAX_POSITION = 7;
+const TARGET_POSITION = 4;
+
+const EXAMPLE_POSITIONS = [7, 3, 2, 6, 2, 6];
+const EXAMPLE_RULES = `1D = 2A, 3A, 5A, 6A
+2A = A
+3A = 6D
+4D = 5D, 6A
+5D = 4D
+6D = 4A`;
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
-
-const makeDefaultMatrix = (size) =>
-  Array.from({ length: size }, (_, row) =>
-    Array.from({ length: size }, (_, col) => (row === col ? 1 : 0)),
-  );
+const directionValue = (direction) => (direction === "D" ? 1 : -1);
+const oppositeDirection = (direction) => (direction === "D" ? "A" : "D");
+const stateKey = (state) => state.join(",");
+const moveKey = (pin, direction) => `${pin}${direction}`;
+const moveLabel = (move) => `${move.pin}${move.direction}`;
 
 const normalizeState = (state, size) =>
   state
     .slice(0, size)
-    .map((value) => clamp(Number(value) || MIN_POSITION, MIN_POSITION, MAX_POSITION));
+    .map((value) => clamp(Number(value) || TARGET_POSITION, MIN_POSITION, MAX_POSITION));
 
-const stateKey = (state) => state.join(",");
+const wrapPosition = (value) =>
+  ((value - MIN_POSITION) % MAX_POSITION + MAX_POSITION) % MAX_POSITION + MIN_POSITION;
 
-const applyMove = (state, matrix, moveIndex) =>
-  state.map((value, tileIndex) => {
-    const delta = matrix[moveIndex][tileIndex];
-    const shifted =
-      ((value - MIN_POSITION + delta) % MAX_POSITION + MAX_POSITION) % MAX_POSITION;
-    return shifted + 1;
+const isSolved = (state) => state.every((value) => value === TARGET_POSITION);
+
+function parseRules(text, size) {
+  const rules = new Map();
+  const errors = [];
+
+  text
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .forEach((line, lineIndex) => {
+      const normalized = line.replace(/\s+/g, "").toUpperCase();
+      const [left, right = ""] = normalized.split("=");
+      const source = left.match(/^([1-7])([AD])$/);
+
+      if (!source) {
+        errors.push(`Linia ${lineIndex + 1}: lewa strona musi wyglądać jak 1D albo 3A.`);
+        return;
+      }
+
+      const sourcePin = Number(source[1]);
+      const sourceDirection = source[2];
+
+      if (sourcePin > size) {
+        errors.push(`Linia ${lineIndex + 1}: zapadka ${sourcePin} nie istnieje przy tej liczbie zapadek.`);
+        return;
+      }
+
+      const effects = [];
+      const tokens = right.split(",").map((token) => token.trim()).filter(Boolean);
+
+      tokens.forEach((token) => {
+        const selfOnly = token.match(/^[AD]$/);
+        const dependent = token.match(/^([1-7])([AD])$/);
+
+        if (selfOnly) {
+          return;
+        }
+
+        if (!dependent) {
+          errors.push(`Linia ${lineIndex + 1}: "${token}" powinno wyglądać jak 2A albo 6D.`);
+          return;
+        }
+
+        const targetPin = Number(dependent[1]);
+        const targetDirection = dependent[2];
+
+        if (targetPin > size) {
+          errors.push(`Linia ${lineIndex + 1}: zapadka ${targetPin} nie istnieje przy tej liczbie zapadek.`);
+          return;
+        }
+
+        if (targetPin !== sourcePin) {
+          effects.push({ pin: targetPin, direction: targetDirection });
+        }
+      });
+
+      rules.set(moveKey(sourcePin, sourceDirection), effects);
+    });
+
+  return { rules, errors };
+}
+
+function getEffects(pin, direction, rules) {
+  const direct = rules.get(moveKey(pin, direction));
+
+  if (direct) {
+    return direct;
+  }
+
+  const inverse = rules.get(moveKey(pin, oppositeDirection(direction)));
+
+  if (!inverse) {
+    return [];
+  }
+
+  return inverse.map((effect) => ({
+    pin: effect.pin,
+    direction: oppositeDirection(effect.direction),
+  }));
+}
+
+function applyMove(state, rules, move) {
+  const deltas = Array.from({ length: state.length }, () => 0);
+  deltas[move.pin - 1] += directionValue(move.direction);
+
+  getEffects(move.pin, move.direction, rules).forEach((effect) => {
+    deltas[effect.pin - 1] += directionValue(effect.direction);
   });
 
-const isSolved = (state) => state.every((value) => value === 1);
+  return state.map((value, index) => wrapPosition(value + deltas[index]));
+}
 
-function solveLock(startState, matrix, size) {
+function solveLock(startState, rules, size) {
   const start = normalizeState(startState, size);
-  const startKey = stateKey(start);
 
   if (isSolved(start)) {
     return {
@@ -45,33 +137,36 @@ function solveLock(startState, matrix, size) {
   }
 
   const queue = [{ state: start, moves: [], states: [start] }];
-  const visited = new Set([startKey]);
+  const visited = new Set([stateKey(start)]);
 
   for (let cursor = 0; cursor < queue.length; cursor += 1) {
     const current = queue[cursor];
 
-    for (let moveIndex = 0; moveIndex < size; moveIndex += 1) {
-      const nextState = applyMove(current.state, matrix, moveIndex);
-      const key = stateKey(nextState);
+    for (let pin = 1; pin <= size; pin += 1) {
+      for (const direction of ["A", "D"]) {
+        const move = { pin, direction };
+        const nextState = applyMove(current.state, rules, move);
+        const key = stateKey(nextState);
 
-      if (visited.has(key)) {
-        continue;
+        if (visited.has(key)) {
+          continue;
+        }
+
+        const nextMoves = [...current.moves, move];
+        const nextStates = [...current.states, nextState];
+
+        if (isSolved(nextState)) {
+          return {
+            status: "solved",
+            moves: nextMoves,
+            states: nextStates,
+            visited: visited.size + 1,
+          };
+        }
+
+        visited.add(key);
+        queue.push({ state: nextState, moves: nextMoves, states: nextStates });
       }
-
-      const nextMoves = [...current.moves, moveIndex + 1];
-      const nextStates = [...current.states, nextState];
-
-      if (isSolved(nextState)) {
-        return {
-          status: "solved",
-          moves: nextMoves,
-          states: nextStates,
-          visited: visited.size + 1,
-        };
-      }
-
-      visited.add(key);
-      queue.push({ state: nextState, moves: nextMoves, states: nextStates });
     }
   }
 
@@ -83,23 +178,24 @@ function solveLock(startState, matrix, size) {
   };
 }
 
-function formatExport(size, startState, matrix, result) {
+function formatExport(size, startState, rulesText, result) {
   const lines = [
-    "Gothic Lock Solver",
-    `Liczba plytek: ${size}`,
-    `Stan poczatkowy: ${startState.join(" ")}`,
+    "G1 Master Lockpicker",
+    `Liczba zapadek: ${size}`,
+    `Cel: kazda zapadka na oczku ${TARGET_POSITION}`,
+    `Pozycje startowe: ${startState.map((value, index) => `${index + 1}:${value}`).join(" ")}`,
     "",
-    "Macierz zaleznosci:",
-    ...matrix.map((row, index) => `Ruch ${index + 1}: ${row.map((value) => (value > 0 ? "+" : value < 0 ? "-" : "0")).join(" ")}`),
+    "Zaleznosci:",
+    rulesText.trim() || "brak zaleznosci",
     "",
   ];
 
   if (result.status === "solved") {
-    lines.push(`Najkrotsza sekwencja (${result.moves.length}): ${result.moves.length ? result.moves.join(" -> ") : "brak ruchow"}`);
+    lines.push(`Najkrotsza sekwencja (${result.moves.length}): ${result.moves.length ? result.moves.map(moveLabel).join(" -> ") : "brak ruchow"}`);
     lines.push("");
     lines.push("Podglad stanow:");
     result.states.forEach((state, index) => {
-      const prefix = index === 0 ? "Start" : `Po ruchu ${index} (${result.moves[index - 1]})`;
+      const prefix = index === 0 ? "Start" : `Po ruchu ${index} (${moveLabel(result.moves[index - 1])})`;
       lines.push(`${prefix}: ${state.join(" ")}`);
     });
   } else {
@@ -118,79 +214,73 @@ const Icon = ({ children }) => (
 );
 
 function App() {
-  const [tileCount, setTileCount] = useState(5);
-  const [positions, setPositions] = useState([2, 3, 5, 1, 4]);
-  const [matrix, setMatrix] = useState(makeDefaultMatrix(5));
+  const [pinCount, setPinCount] = useState(6);
+  const [positions, setPositions] = useState(EXAMPLE_POSITIONS);
+  const [rulesText, setRulesText] = useState(EXAMPLE_RULES);
   const [result, setResult] = useState(null);
 
   const normalizedPositions = useMemo(
-    () => normalizeState(positions, tileCount),
-    [positions, tileCount],
+    () => normalizeState(positions, pinCount),
+    [positions, pinCount],
+  );
+
+  const parsedRules = useMemo(
+    () => parseRules(rulesText, pinCount),
+    [rulesText, pinCount],
   );
 
   const resizePuzzle = (size) => {
-    const nextSize = clamp(Number(size) || MIN_TILES, MIN_TILES, MAX_TILES);
-    setTileCount(nextSize);
+    const nextSize = clamp(Number(size) || MIN_PINS, MIN_PINS, MAX_PINS);
+    setPinCount(nextSize);
     setPositions((current) => {
       const resized = normalizeState(current, nextSize);
       while (resized.length < nextSize) {
-        resized.push(1);
+        resized.push(TARGET_POSITION);
       }
       return resized;
     });
-    setMatrix((current) =>
-      Array.from({ length: nextSize }, (_, row) =>
-        Array.from({ length: nextSize }, (_, col) => current[row]?.[col] ?? (row === col ? 1 : 0)),
-      ),
-    );
     setResult(null);
   };
 
   const updatePosition = (index, value) => {
     setPositions((current) =>
       current.map((item, itemIndex) =>
-        itemIndex === index ? clamp(Number(value) || MIN_POSITION, MIN_POSITION, MAX_POSITION) : item,
-      ),
-    );
-    setResult(null);
-  };
-
-  const updateMatrixCell = (row, col, value) => {
-    setMatrix((current) =>
-      current.map((matrixRow, rowIndex) =>
-        rowIndex === row
-          ? matrixRow.map((cell, colIndex) => (colIndex === col ? Number(value) : cell))
-          : matrixRow,
+        itemIndex === index
+          ? clamp(Number(value) || TARGET_POSITION, MIN_POSITION, MAX_POSITION)
+          : item,
       ),
     );
     setResult(null);
   };
 
   const resetExample = () => {
-    setTileCount(5);
-    setPositions([2, 3, 5, 1, 4]);
-    setMatrix([
-      [1, 0, 0, -1, 0],
-      [0, 1, -1, 0, 0],
-      [0, 0, 1, 1, -1],
-      [-1, 0, 0, 1, 0],
-      [0, 1, 0, 0, 1],
-    ]);
+    setPinCount(6);
+    setPositions(EXAMPLE_POSITIONS);
+    setRulesText(EXAMPLE_RULES);
     setResult(null);
   };
 
   const solve = () => {
-    setResult(solveLock(normalizedPositions, matrix, tileCount));
+    if (parsedRules.errors.length > 0) {
+      setResult(null);
+      return;
+    }
+
+    setResult(solveLock(normalizedPositions, parsedRules.rules, pinCount));
   };
 
   const exportResult = () => {
-    const activeResult = result ?? solveLock(normalizedPositions, matrix, tileCount);
-    const text = formatExport(tileCount, normalizedPositions, matrix, activeResult);
+    if (parsedRules.errors.length > 0) {
+      return;
+    }
+
+    const activeResult = result ?? solveLock(normalizedPositions, parsedRules.rules, pinCount);
+    const text = formatExport(pinCount, normalizedPositions, rulesText, activeResult);
     const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = "gothic-lock-result.txt";
+    link.download = "g1-master-lockpicker-result.txt";
     document.body.appendChild(link);
     link.click();
     link.remove();
@@ -202,40 +292,44 @@ function App() {
       <section className="workspace">
         <header className="topbar">
           <div>
-            <p className="eyebrow">Solver kombinacyjny</p>
-            <h1>Gothic Lock Solver</h1>
+            <p className="eyebrow">Solver zamka G1</p>
+            <h1>G1 Master Lockpicker</h1>
+            <p className="hero-note">
+              Wpisz oczko każdej zapadki i zależności ruchu. A oznacza ruch w lewo,
+              D ruch w prawo. Zamek otwiera się, gdy wszystkie zapadki stoją na oczku 4.
+            </p>
           </div>
           <div className="actions">
             <button className="ghost-button" type="button" onClick={resetExample} title="Wczytaj przykład">
               <Icon>↺</Icon>
               Przykład
             </button>
-            <button className="primary-button" type="button" onClick={solve}>
+            <button className="primary-button" type="button" onClick={solve} disabled={parsedRules.errors.length > 0}>
               <Icon>▶</Icon>
               Rozwiąż
             </button>
           </div>
         </header>
 
-        <section className="control-band" aria-label="Ustawienia zamka">
+        <section className="control-band" aria-label="Pozycje zapadek">
           <label className="field">
-            <span>Liczba płytek</span>
+            <span>Liczba zapadek</span>
             <input
               type="number"
-              min={MIN_TILES}
-              max={MAX_TILES}
-              value={tileCount}
+              min={MIN_PINS}
+              max={MAX_PINS}
+              value={pinCount}
               onChange={(event) => resizePuzzle(event.target.value)}
             />
           </label>
 
-          <div className="positions" aria-label="Pozycje płytek">
-            {Array.from({ length: tileCount }, (_, index) => (
+          <div className="positions" aria-label="Oczka zapadek">
+            {Array.from({ length: pinCount }, (_, index) => (
               <label className="tile-input" key={index}>
-                <span>{index + 1}</span>
+                <span>Zapadka {index + 1}</span>
                 <input
                   type="number"
-                  min="1"
+                  min={MIN_POSITION}
                   max={MAX_POSITION}
                   value={normalizedPositions[index]}
                   onChange={(event) => updatePosition(index, event.target.value)}
@@ -245,40 +339,42 @@ function App() {
           </div>
         </section>
 
-        <section className="matrix-section" aria-label="Macierz zależności">
+        <section className="rules-section" aria-label="Zależności ruchu">
           <div className="section-heading">
             <div>
-              <p className="eyebrow">-/0/+</p>
-              <h2>Macierz zależności</h2>
+              <p className="eyebrow">A / D</p>
+              <h2>Zależności ruchu</h2>
             </div>
-            <p>Wiersz oznacza naciśnięty ruch, kolumna płytkę, a wartość zmianę pozycji.</p>
+            <p>
+              Wpisuj po jednej zależności na linię, np. <strong>1D = 2A, 3A</strong>.
+              Ruch odwrotny jest liczony automatycznie.
+            </p>
           </div>
 
-          <div className="matrix-wrap">
-            <div className="matrix-grid" style={{ "--size": tileCount }}>
-              <div className="corner-cell" />
-              {Array.from({ length: tileCount }, (_, col) => (
-                <div className="matrix-label" key={`col-${col}`}>P{col + 1}</div>
-              ))}
-              {matrix.map((row, rowIndex) => (
-                <React.Fragment key={`row-${rowIndex}`}>
-                  <div className="matrix-label">R{rowIndex + 1}</div>
-                  {row.map((cell, colIndex) => (
-                    <select
-                      key={`${rowIndex}-${colIndex}`}
-                      value={cell}
-                      onChange={(event) => updateMatrixCell(rowIndex, colIndex, event.target.value)}
-                      aria-label={`Ruch ${rowIndex + 1}, płytka ${colIndex + 1}`}
-                    >
-                      <option value="-1">-</option>
-                      <option value="0">0</option>
-                      <option value="1">+</option>
-                    </select>
-                  ))}
-                </React.Fragment>
-              ))}
-            </div>
+          <textarea
+            className="rules-input"
+            spellCheck="false"
+            value={rulesText}
+            onChange={(event) => {
+              setRulesText(event.target.value);
+              setResult(null);
+            }}
+            aria-label="Zależności ruchu zapadek"
+          />
+
+          <div className="legend">
+            <span><strong>A</strong> lewo</span>
+            <span><strong>D</strong> prawo</span>
+            <span><strong>1D = 2A</strong> gdy 1 idzie w prawo, 2 idzie w lewo</span>
+            <span><strong>2A = A</strong> ruch niezależny, bez innych zapadek</span>
           </div>
+
+          {parsedRules.errors.length > 0 && (
+            <div className="status-box warning">
+              <strong>Popraw zależności:</strong>
+              <span>{parsedRules.errors.join(" ")}</span>
+            </div>
+          )}
         </section>
 
         <section className="result-band" aria-live="polite">
@@ -287,15 +383,15 @@ function App() {
               <p className="eyebrow">BFS</p>
               <h2>Wynik</h2>
             </div>
-            <button className="ghost-button" type="button" onClick={exportResult} title="Eksportuj wynik do tekstu">
+            <button className="ghost-button" type="button" onClick={exportResult} disabled={parsedRules.errors.length > 0} title="Eksportuj wynik do tekstu">
               <Icon>⇩</Icon>
               Eksport
             </button>
           </div>
 
-          {!result && (
+          {!result && parsedRules.errors.length === 0 && (
             <div className="empty-state">
-              Ustaw pozycje i zależności, a potem uruchom wyszukiwanie najkrótszej sekwencji.
+              Ustaw oczka i zależności, potem uruchom szukanie najkrótszej sekwencji.
             </div>
           )}
 
@@ -310,8 +406,8 @@ function App() {
               <div className="status-box">
                 <strong>
                   {result.moves.length === 0
-                    ? "Zamek jest już rozwiązany."
-                    : `Najkrótsza sekwencja: ${result.moves.join(" -> ")}`}
+                    ? "Zamek jest już otwarty."
+                    : `Sekwencja: ${result.moves.map(moveLabel).join(" -> ")}`}
                 </strong>
                 <span>{result.moves.length} ruchów, {result.visited} odwiedzonych stanów</span>
               </div>
@@ -321,11 +417,11 @@ function App() {
                   <article className="state-card" key={`${index}-${stateKey(state)}`}>
                     <div className="state-title">
                       <span>{index === 0 ? "Start" : `Krok ${index}`}</span>
-                      {index > 0 && <strong>Ruch {result.moves[index - 1]}</strong>}
+                      {index > 0 && <strong>{moveLabel(result.moves[index - 1])}</strong>}
                     </div>
-                    <div className="state-row" style={{ "--tile-count": tileCount }}>
-                      {state.map((value, tileIndex) => (
-                        <span className={value === 1 ? "solved tile" : "tile"} key={tileIndex}>
+                    <div className="state-row" style={{ "--tile-count": pinCount }}>
+                      {state.map((value, pinIndex) => (
+                        <span className={value === TARGET_POSITION ? "solved tile" : "tile"} key={pinIndex}>
                           {value}
                         </span>
                       ))}

@@ -1,6 +1,6 @@
-# Gothic Lock Solver
+# G1 Master Lockpicker
 
-Klientowa aplikacja React/Vite do rozwiązywania zamka z 3-7 płytkami.
+Klientowa aplikacja React/Vite do rozwiązywania zamka G1 z 3-7 zapadkami.
 
 ## Uruchomienie
 
@@ -21,10 +21,13 @@ W repozytorium na GitHub ustaw:
 
 ## Funkcje
 
-- wybór liczby płytek od 3 do 7,
-- edycja pozycji startowych w zakresie `1..N`,
-- macierz zależności z wartościami `-`, `0`, `+`,
-- BFS zwracający najkrótszą sekwencję ruchów,
+- wybór liczby zapadek od 3 do 7,
+- edycja oczka każdej zapadki w zakresie `1..7`,
+- cel: wszystkie zapadki na oczku `4`,
+- zależności tekstowe, np. `1D = 2A, 3A, 5A`,
+- automatyczne odwracanie zależności dla przeciwnego ruchu,
+- BFS sprawdzający ruch w lewo `A` i ruch w prawo `D` dla każdej zapadki,
+- najkrótsza sekwencja w formacie `1D -> 4A -> 6D`,
 - podgląd stanu po każdym kroku,
 - eksport wyniku do pliku tekstowego.
 

@@ -29,6 +29,11 @@ button {
   cursor: pointer;
 }
 
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
 .app-shell {
   min-height: 100vh;
   padding: 28px;
@@ -82,6 +87,14 @@ h1 {
   font-size: clamp(2rem, 5vw, 4.7rem);
   line-height: 0.94;
   color: #111;
+}
+
+.hero-note {
+  max-width: 720px;
+  margin: 12px 0 0;
+  color: #544c43;
+  font-size: 1rem;
+  line-height: 1.45;
 }
 
 h2 {
@@ -170,7 +183,7 @@ h2 {
   font-size: 0.82rem;
 }
 
-.matrix-section,
+.rules-section,
 .result-band {
   padding: 24px;
   border-top: 0;
@@ -195,35 +208,43 @@ h2 {
   line-height: 1.5;
 }
 
-.matrix-wrap {
-  overflow-x: auto;
-  padding-bottom: 4px;
+.rules-input {
+  width: 100%;
+  min-height: 210px;
+  resize: vertical;
+  padding: 16px;
+  border: 1px solid #b9b0a0;
+  border-radius: 8px;
+  color: #111;
+  background: #fffdf8;
+  font-family: "Cascadia Mono", "Consolas", ui-monospace, monospace;
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1.65;
 }
 
-.matrix-grid {
-  display: grid;
-  grid-template-columns: 52px repeat(var(--size), 64px);
-  grid-auto-rows: 46px;
-  gap: 8px;
-  min-width: max-content;
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
 }
 
-.corner-cell,
-.matrix-label {
-  display: grid;
-  place-items: center;
-  min-width: 0;
+.legend span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid rgba(24, 24, 24, 0.12);
   border-radius: 6px;
-  color: #4c443c;
-  background: #ded6c4;
-  font-size: 0.82rem;
-  font-weight: 900;
+  color: #51493f;
+  background: #eee8d8;
+  font-size: 0.9rem;
 }
 
-.matrix-grid select {
-  min-height: 46px;
-  text-align: center;
-  font-weight: 900;
+.legend strong {
+  margin-right: 6px;
+  color: #7a332b;
 }
 
 .result-band {
@@ -251,6 +272,12 @@ h2 {
 .status-box.warning {
   color: #4d231e;
   background: #f0d9d2;
+}
+
+.rules-section .status-box {
+  align-items: flex-start;
+  justify-content: flex-start;
+  margin: 14px 0 0;
 }
 
 .timeline {
