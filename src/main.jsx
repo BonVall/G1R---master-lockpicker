@@ -16,8 +16,7 @@ const EXAMPLE_RELATIONS = {
   5: { 4: "same" },
   6: { 4: "opposite" },
 };
-const BEETHOVEN_AUDIO =
-  "https://upload.wikimedia.org/wikipedia/commons/5/5b/Ludwig_van_Beethoven_-_Symphonie_5_c-moll_-_1._Allegro_con_brio.ogg";
+const MUSIC_EMBED = "https://www.youtube-nocookie.com/embed/_4IRMYuE1hI";
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 const directionValue = (direction) => (direction === "D" ? 1 : -1);
@@ -292,10 +291,13 @@ function App() {
   return (
     <main className="app-shell">
       <aside className="music-player" aria-label="Odtwarzacz muzyki">
-        <span>Beethoven V</span>
-        <audio controls preload="none" src={BEETHOVEN_AUDIO}>
-          Twoja przeglądarka nie obsługuje odtwarzacza audio.
-        </audio>
+        <span>Soundtrack</span>
+        <iframe
+          title="Odtwarzacz muzyki"
+          src={MUSIC_EMBED}
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowFullScreen
+        />
       </aside>
 
       <section className="workspace">
