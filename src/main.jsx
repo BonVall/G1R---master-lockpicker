@@ -32,7 +32,7 @@ const POSITION_OPTIONS = Array.from(
 );
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
-const directionValue = (direction) => (direction === "D" ? 1 : -1);
+const directionValue = (direction) => (direction === "A" ? 1 : -1);
 const oppositeDirection = (direction) => (direction === "D" ? "A" : "D");
 const relationLabel = {
   same: "ten sam",

@@ -28,7 +28,7 @@ W repozytorium na GitHub ustaw:
 - klikalne zależności `ten sam kierunek` i `przeciwny kierunek`,
 - ruch każdej zapadki zawsze o dokładnie jedno oczko,
 - automatyczne odwracanie zależności dla ruchu `A` i `D`,
-- BFS sprawdzający ruch w lewo `A` i ruch w prawo `D` dla każdej zapadki,
+- BFS sprawdzający oba kierunki `A` i `D` dla każdej zapadki,
 - najkrótsza sekwencja w formacie `1D -> 4A -> 6D`,
 - podgląd stanu po każdym kroku,
 - eksport wyniku do pliku tekstowego.
